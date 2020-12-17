@@ -1,3 +1,5 @@
+package lesson1;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -10,7 +12,7 @@ public class CloudServer {
         try(ServerSocket server = new ServerSocket(8189)){
             while (true){
                 Socket socket = server.accept();
-                System.out.println("Client accepted");
+                System.out.println("lesson1.Client accepted");
                 run.execute(new ClientHandler(socket));
             }
         }catch (Exception e){

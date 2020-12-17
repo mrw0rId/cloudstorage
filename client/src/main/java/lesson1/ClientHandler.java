@@ -1,3 +1,5 @@
+package lesson1;
+
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
@@ -64,13 +66,13 @@ public class ClientHandler implements Runnable {
                     }
                 }
                 if (command.equals("exit")) {
-                    System.out.println("Client disconnected correctly");
-                    out.writeUTF("Client disconnected ");
+                    System.out.println("lesson1.Client disconnected correctly");
+                    out.writeUTF("lesson1.Client disconnected ");
                     break;
                 }
             }
         } catch (SocketException socketException) {
-            System.out.println("Client disconnected");
+            System.out.println("lesson1.Client disconnected");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

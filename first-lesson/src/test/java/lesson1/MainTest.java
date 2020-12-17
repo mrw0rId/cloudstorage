@@ -1,4 +1,4 @@
-package ru.geekbrains;
+package lesson1;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

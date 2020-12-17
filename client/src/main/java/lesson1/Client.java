@@ -1,10 +1,11 @@
+package lesson1;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Paths;
 
 public class Client extends JFrame {
 
