@@ -30,7 +30,8 @@ public class Network {
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) {
-                            socketChannel.pipeline().addLast();
+                            socketChannel.pipeline()
+                                    .addLast(new ClientFileGetterHandler());
                             currentChannel = socketChannel;
                         }
                     });

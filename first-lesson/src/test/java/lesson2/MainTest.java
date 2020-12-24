@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -312,5 +313,13 @@ class MainTest {
         channel.truncate(channel.size() - 20);
         System.out.println(channel.size());
         channel.close();
+    }
+
+    @Test
+    void streamTest(){
+        double[] doubleArray = {1.0, 2.0, 3.0};
+        System.out.println(Arrays.toString(Arrays.stream(doubleArray).map(d -> d * 2).toArray()));
+
+        System.out.println(Arrays.stream(doubleArray).sum());
     }
 }

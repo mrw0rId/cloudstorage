@@ -8,8 +8,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
-import java.net.SocketException;
-
 public class NettyServer {
 
     public void run() throws Exception {
@@ -23,8 +21,9 @@ public class NettyServer {
                         @Override
                         public void initChannel(SocketChannel ch) {
                             ch.pipeline()
+                                    .addLast(new ServerFileSenderHandler())
                                     .addLast(new FirstHandler())
-                                    .addLast(new FileManagerHandler());
+                                    .addLast(new ServerFileGetterHandler());
                         }
                     });
             ChannelFuture f = b.bind(8089).sync();

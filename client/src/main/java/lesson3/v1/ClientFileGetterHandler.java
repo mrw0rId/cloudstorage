@@ -7,24 +7,24 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.nio.file.Files;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 
-public class FileManagerHandler extends ChannelInboundHandlerAdapter {
+public class ClientFileGetterHandler extends ChannelInboundHandlerAdapter {
 
     private State currentState = State.IDLE;
     private int nextLength;
     private long fileLength;
     private long receivedFileLength;
     private BufferedOutputStream out;
-    private Path rootPath = Paths.get("server" + File.separator + "root_folder");
+    private Path rootPath = Paths.get("client" + File.separator + "root_folder");
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf buf = ((ByteBuf) msg);
-        String stringFileName = null;
+        ByteBuf buf = (ByteBuf) msg;
+
+        String stringFileName;
         while (buf.readableBytes() > 0) {
             if (currentState == State.IDLE) {
                 byte readed = buf.readByte();
@@ -32,15 +32,13 @@ public class FileManagerHandler extends ChannelInboundHandlerAdapter {
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
                     System.out.println("STATE: Start file receiving");
-                } else if (readed == (byte) 20) {
-
                 } else {
                     System.out.println("ERROR: Invalid first byte - " + readed);
                 }
             }
+
             if (currentState == State.NAME_LENGTH) {
                 System.out.println("waiting nameLength");
-                System.out.println(buf.readableBytes());
                 if (buf.readableBytes() >= 4) {
                     System.out.println("STATE: Get filename length");
                     nextLength = buf.readInt();
@@ -52,7 +50,7 @@ public class FileManagerHandler extends ChannelInboundHandlerAdapter {
                     byte[] fileName = new byte[nextLength];
                     buf.readBytes(fileName);
                     stringFileName = new String(fileName, "UTF-8");
-                    System.out.println("STATE: Filename received - _" + stringFileName);
+                    System.out.println("STATE: Filename received - " + stringFileName);
                     out = new BufferedOutputStream(new FileOutputStream(rootPath + File.separator + stringFileName));
                     currentState = State.FILE_LENGTH;
                 }
