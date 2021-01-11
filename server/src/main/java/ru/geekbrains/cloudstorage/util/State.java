@@ -1,6 +1,7 @@
-package lesson3.v1;
+package ru.geekbrains.cloudstorage.util;
 
 public enum State {
+    START,
     IDLE,
     NAME_LENGTH,
     NAME,

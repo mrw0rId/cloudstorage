@@ -1,4 +1,4 @@
-package lesson3.v1;
+package ru.geekbrains.cloudstorage;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -7,8 +7,11 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import ru.geekbrains.cloudstorage.handlers.ClientCommandsHandler;
 
 public class NettyServer {
+
+    private final int inetPort = 8089;
 
     public void run() throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -21,12 +24,10 @@ public class NettyServer {
                         @Override
                         public void initChannel(SocketChannel ch) {
                             ch.pipeline()
-                                    .addLast(new ServerFileSenderHandler())
-                                    .addLast(new FirstHandler())
-                                    .addLast(new ServerFileGetterHandler());
+                                    .addLast(new ClientCommandsHandler());
                         }
                     });
-            ChannelFuture f = b.bind(8089).sync();
+            ChannelFuture f = b.bind(inetPort).sync();
             System.out.println("Server started");
             f.channel().closeFuture().sync();
         } finally {
