@@ -18,41 +18,52 @@ public class ClientFileManager {
 
     private static ManagerFlag state = ManagerFlag.IDLE;
 
-    public static void cmdController(Path rootPath, String flag, String filePath, JTextArea chatArea, String date, Channel channel, ChannelFutureListener finishListener) {
-
+    public static void cmdController(Path rootPath, String cmd, JTextArea chatArea, String date, Channel channel, ChannelFutureListener finishListener) {
+        String flag = cmd.split(" ")[0];
         switch (flag) {
+            case "upload":
+                state = ManagerFlag.SEND;
+                manageFile(rootPath, cmd, chatArea, date, channel, finishListener);
+                break;
             case "rmc":
                 state = ManagerFlag.DELETE;
-                manageFile(rootPath, filePath, chatArea, date, channel, finishListener);
+                manageFile(rootPath, cmd, chatArea, date, channel, finishListener);
+                break;
+            case "rnc":
+                state = ManagerFlag.RENAME;
+                manageFile(rootPath, cmd, chatArea, date, channel, finishListener);
                 break;
             case "opc":
                 state = ManagerFlag.OPEN;
-                manageFile(rootPath, filePath, chatArea, date, channel, finishListener);
-                break;
-            case "upload":
-                state = ManagerFlag.SEND;
-                manageFile(rootPath, filePath, chatArea, date, channel, finishListener);
+                manageFile(rootPath, cmd, chatArea, date, channel, finishListener);
                 break;
         }
     }
 
-    public static void manageFile(Path rootPath, String filePath, JTextArea chatArea, String date, Channel channel, ChannelFutureListener finishListener) {
-        String[] splitedCmd = filePath.split(Pattern.quote(File.separator));
+    public static void manageFile(Path rootPath, String cmd, JTextArea chatArea, String date, Channel channel, ChannelFutureListener finishListener) {
+        String filePath = cmd.split(" ")[1];
+        String[] splitedFilePath = filePath.split(Pattern.quote(File.separator));
+
         Path directory;
         String fileName;
+        String newName;
 
         try {
-            directory = Paths.get(splitedCmd[0]);
-            fileName = splitedCmd[1];
+            directory = Paths.get(splitedFilePath[0]);
+            fileName = splitedFilePath[1];
+            newName = cmd.split(" ")[2];
         } catch (ArrayIndexOutOfBoundsException e) {
             directory = rootPath;
-            fileName = splitedCmd[0];
+            fileName = splitedFilePath[0];
         }
+        try {newName = cmd.split(" ")[2];}
+        catch (ArrayIndexOutOfBoundsException e) {newName = null;}
 
         try {
             Path finalDirectory = directory;
             String finalFileName = fileName;
-            System.out.println("finalFileName:" + finalFileName);
+            String finalNewName = newName;
+
             Files.walkFileTree(rootPath, new SimpleFileVisitor<>() {
                 @Override
                 public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
@@ -69,6 +80,18 @@ public class ClientFileManager {
                     if (file.getFileName().toString().equals(finalFileName)) {
                         try {
                             switch (state) {
+                                case RENAME:
+                                    File toRename = new File(String.valueOf(file.toAbsolutePath()));
+                                    File fileWithNewName = new File(toRename.getParent() + File.separator + finalNewName);
+                                    if (fileWithNewName.exists()) {
+                                        chatArea.append(date + ": File with name:" + finalNewName + " already exists in that directory" + "\n");
+                                        return FileVisitResult.TERMINATE;
+                                    }else {
+                                        if (toRename.renameTo(fileWithNewName)) {
+                                            chatArea.append(date + ": Renamed file: " + file.getFileName() + " to: " + finalNewName + "\n");
+                                            return FileVisitResult.TERMINATE;
+                                        }
+                                    }
                                 case DELETE:
                                     Files.delete(file);
                                     chatArea.append(date + ": Deleted file: " + file.getFileName() + "\n");

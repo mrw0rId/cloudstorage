@@ -65,12 +65,8 @@ public class ServerFileManager {
     }
 
     public static void sendFile(Path path, String[] splitedCmd, ChannelHandlerContext ctx, ChannelFutureListener finishListener) throws IOException, InterruptedException {
-        Stream<Path> pathStream = Files.find(path, 100, new BiPredicate<Path, BasicFileAttributes>() {
-            @Override
-            public boolean test(Path path, BasicFileAttributes basicFileAttributes) {
-                return path.getFileName().toString().equals(splitedCmd[1]);
-            }
-        });
+        Stream<Path> pathStream = Files.find(path, 100, (path1, basicFileAttributes) ->
+                path1.getFileName().toString().equals(splitedCmd[1]));
         if (pathStream != null) {
             for (var p : pathStream.toArray()) {
                 Path fileString = (Path) p;

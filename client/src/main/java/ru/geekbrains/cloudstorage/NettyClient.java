@@ -37,6 +37,7 @@ public class NettyClient {
             "<upload 'filename'> for uploading file to server\n" +
             "<rms 'target folder/filename or filename'> for deleting file from server\n" +
             "<rmc 'target folder/filename or filename'> for deleting file from client\n" +
+            "<rnc 'target folder/filename or filename newFileName'> for renaming file on client\n" +
             "<ops 'target folder/filename or filename'> for opening file to server\n" +
             "<opc 'target folder/filename or filename'> for opening file to server\n" +
             "<exit> for quit program\n";
@@ -44,9 +45,10 @@ public class NettyClient {
             "help\n" +
             "download 1.txt\n" +
             "upload 1.txt\n" +
-            "rms 1.txt\n" +
-            "rms folder\\1.txt\n" +
-            "rms 1.txt\n" +
+            "rmc 1.txt\n" +
+            "rmc folder\\1.txt\n" +
+            "rmc 1.txt\n" +
+            "rnc folder\\1.txt 3.txt\n" +
             "exit\n"+
             "----------------------------------------\n";
 
@@ -76,17 +78,7 @@ public class NettyClient {
                     break;
                 case "upload":
                     appendCmd(cmd,"");
-//                    ClientFileManager.sendFile(rootPath, cmd,network.getCurrentChannel(), gui.getChatArea(),
-//                            formatter.format(date),  future -> {
-//                                if (!future.isSuccess()) {
-//                                    future.cause().printStackTrace();
-//                                }
-//                                if (future.isSuccess()) {
-//                                    appendCmd(splitedCmd[1]," uploaded successfully");
-//                                    System.out.println(formatter.format(date) + ": " + splitedCmd[1] + " uploaded successfully\n");
-//                                }
-//                            });
-                    ClientFileManager.cmdController(rootPath, splitedCmd[0], splitedCmd[1], gui.getChatArea(),
+                    ClientFileManager.cmdController(rootPath, cmd, gui.getChatArea(),
                             formatter.format(date), network.getCurrentChannel(), future -> {
                         if (!future.isSuccess()) {
                             future.cause().printStackTrace();
@@ -110,12 +102,10 @@ public class NettyClient {
                     network.getCurrentChannel().writeAndFlush(Unpooled.copiedBuffer(cmd.getBytes()));
                     break;
                 case "rmc":
-                    appendCmd(cmd,"");
-                    ClientFileManager.cmdController(rootPath,splitedCmd[0], splitedCmd[1], gui.getChatArea(),
-                            formatter.format(date), network.getCurrentChannel(), future->{});
-                    break;
+                case "rnc":
                 case "opc":
-                    ClientFileManager.cmdController(rootPath,splitedCmd[0], splitedCmd[1], gui.getChatArea(),
+                    appendCmd(cmd,"");
+                    ClientFileManager.cmdController(rootPath, cmd, gui.getChatArea(),
                             formatter.format(date), network.getCurrentChannel(), future->{});
                     break;
                 case "ops":
@@ -126,7 +116,6 @@ public class NettyClient {
                     gui.exit();
                     break;
             }
-            //TODO: Добавить обработку служебных команд
         } catch (IOException e) {
             e.printStackTrace();
         }

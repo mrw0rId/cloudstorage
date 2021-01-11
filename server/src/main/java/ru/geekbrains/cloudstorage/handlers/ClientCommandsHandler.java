@@ -48,7 +48,6 @@ public class ClientCommandsHandler extends ChannelInboundHandlerAdapter {
             System.out.println(cmd);
             splitedCmd = cmd.split(" ");
         }
-        //TODO: Добавить обработку служебных команд
         switch (splitedCmd[0]){
             case "upload":
                 if(firstHandlerState==State.START) firstHandlerState = State.IDLE;
