@@ -1,6 +1,7 @@
 package ru.geekbrains.cloudstorage.util;
 
-public enum State {
+public enum FileState {
+    START,
     IDLE,
     NAME_LENGTH,
     NAME,
