@@ -47,8 +47,12 @@ public class BasicAuthService implements AuthService {
     public Record findRecord(String login, String password) {
         for (Record record : records) {
             if (record.getLogin().equals(login) && record.getPassword().equals(password)) {
-                authorizedRecords.add(record);
-                return record;
+                if(authorizedRecords.contains(record)){
+                    return new Record(0,"","","");
+                } else {
+                    authorizedRecords.add(record);
+                    return record;
+                }
             }
         }
         return null;
