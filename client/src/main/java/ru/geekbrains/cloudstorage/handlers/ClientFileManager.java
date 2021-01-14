@@ -18,57 +18,98 @@ public class ClientFileManager {
 
     private static ManagerFlag state = ManagerFlag.IDLE;
 
-    public static void cmdController(Path rootPath, String flag, String filePath, JTextArea chatArea, String date, Channel channel, ChannelFutureListener finishListener) {
-
+    public static void cmdController(Path rootPath, String cmd, JTextArea chatArea, String date, Channel channel, ChannelFutureListener finishListener) throws IOException {
+        String flag = cmd.split(" ")[0];
         switch (flag) {
+            case "upload":
+                state = ManagerFlag.SEND;
+                manageFile(rootPath, cmd, chatArea, date, channel, finishListener);
+                break;
             case "rmc":
                 state = ManagerFlag.DELETE;
-                manageFile(rootPath, filePath, chatArea, date, channel, finishListener);
+                manageFile(rootPath, cmd, chatArea, date, channel, finishListener);
+                break;
+            case "rnc":
+                state = ManagerFlag.RENAME;
+                manageFile(rootPath, cmd, chatArea, date, channel, finishListener);
                 break;
             case "opc":
                 state = ManagerFlag.OPEN;
-                manageFile(rootPath, filePath, chatArea, date, channel, finishListener);
+                manageFile(rootPath, cmd, chatArea, date, channel, finishListener);
                 break;
-            case "upload":
-                state = ManagerFlag.SEND;
-                manageFile(rootPath, filePath, chatArea, date, channel, finishListener);
+            case "cdc":
+                state = ManagerFlag.CREATEDIR;
+                manageFile(rootPath, cmd, chatArea, date, channel, finishListener);
+                break;
+            case "cfc":
+                state = ManagerFlag.CREATEFILE;
+                manageFile(rootPath, cmd, chatArea, date, channel, finishListener);
                 break;
         }
     }
 
-    public static void manageFile(Path rootPath, String filePath, JTextArea chatArea, String date, Channel channel, ChannelFutureListener finishListener) {
-        String[] splitedCmd = filePath.split(Pattern.quote(File.separator));
-        Path directory;
-        String fileName;
+    public static void manageFile(Path rootPath, String cmd, JTextArea chatArea, String date, Channel channel, ChannelFutureListener finishListener) throws IOException {
+        String filePath = cmd.split(" ")[1];
 
-        try {
-            directory = Paths.get(splitedCmd[0]);
-            fileName = splitedCmd[1];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            directory = rootPath;
-            fileName = splitedCmd[0];
+        if(!new File(filePath).exists()) {
+            File f = new File(filePath);
+            switch (state) {
+                case CREATEFILE:
+                    f.getParentFile().mkdirs();
+                    f.createNewFile();
+                    break;
+                case CREATEDIR:
+                    f.mkdirs();
+                    chatArea.append(date + ": Created directory " + Paths.get(filePath).getFileName() + "at Path: " + f.getParentFile() + "\n");
+                    break;
+            }
+            return;
         }
 
+        Path directory;
+        String fileName;
+        String newName;
+        if((Paths.get(filePath)).getParent()!=null){
+            directory = (Paths.get(filePath)).getParent();
+            fileName = (Paths.get(filePath)).getFileName().toString();
+        } else{
+            directory = rootPath;
+            fileName = filePath;
+        }
+        try {newName = cmd.split(" ")[2];}
+        catch (ArrayIndexOutOfBoundsException e) {newName = null;}
+
         try {
-            Path finalDirectory = directory;
-            String finalFileName = fileName;
-            System.out.println("finalFileName:" + finalFileName);
-            Files.walkFileTree(rootPath, new SimpleFileVisitor<>() {
+            String finalNewName = newName;
+
+            Files.walkFileTree(directory, new SimpleFileVisitor<>() {
                 @Override
                 public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                     System.out.println("pre visit dir:" + dir);
-                    if (!finalDirectory.equals(rootPath)) {
-                        if (!dir.endsWith(finalDirectory) && !dir.equals(rootPath)) {
-                            return FileVisitResult.SKIP_SUBTREE;
-                        } else return FileVisitResult.CONTINUE;
-                    } else return FileVisitResult.CONTINUE;
+                     if(!directory.toFile().exists()){
+                        chatArea.append(date + ": Directory not exist " + directory + "\n");
+                        return FileVisitResult.TERMINATE;
+                    }
+                    return FileVisitResult.CONTINUE;
                 }
 
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    if (file.getFileName().toString().equals(finalFileName)) {
+                    if (file.getFileName().toString().equals(fileName)) {
                         try {
                             switch (state) {
+                                case RENAME:
+                                    File toRename = new File(String.valueOf(file.toAbsolutePath()));
+                                    File fileWithNewName = new File(toRename.getParent() + File.separator + finalNewName);
+                                    if (fileWithNewName.exists()) {
+                                        chatArea.append(date + ": File with name:" + finalNewName + " already exists in that directory" + "\n");
+                                        return FileVisitResult.TERMINATE;
+                                    }else {
+                                        if (toRename.renameTo(fileWithNewName)) {
+                                            chatArea.append(date + ": Renamed file: " + file.getFileName() + " to: " + finalNewName + "\n");
+                                            return FileVisitResult.TERMINATE;
+                                        }
+                                    }
                                 case DELETE:
                                     Files.delete(file);
                                     chatArea.append(date + ": Deleted file: " + file.getFileName() + "\n");
@@ -118,7 +159,7 @@ public class ClientFileManager {
                                     return FileVisitResult.TERMINATE;
                             }
                         } catch (NoSuchFileException | InterruptedException x) {
-                            chatArea.append(date + ": File not found: " + finalFileName + "\n");
+                            chatArea.append(date + ": File not found: " + fileName + "\n");
                         }
                     }
                     return FileVisitResult.CONTINUE;

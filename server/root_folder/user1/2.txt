@@ -1,0 +1,27 @@
+1. Overview
+In this article, we'll explore the introductory parts of Java NIO's Selector component.
+
+A selector provides a mechanism for monitoring one or more NIO channels and recognizing when one or more become available for data transfer.
+
+This way, a single thread can be used for managing multiple channels, and thus multiple network connections.
+
+2. Why Use a Selector?
+With a selector, we can use one thread instead of several to manage multiple channels. Context-switching between threads is expensive for the operating system, and additionally, each thread takes up memory.
+
+Therefore, the fewer threads we use, the better. However, it's important to remember that modern operating systems and CPU's keep getting better at multitasking, so the overheads of multi-threading keep diminishing over time.
+
+We'll be dealing with here is how we can handle multiple channels with a single thread using a selector.
+
+Note also that selectors don't just help you read data; they can also listen for incoming network connections and write data across slow channels.
+
+3. Setup
+To use the selector, we do not need any special set up. All the classes we need are the core java.nio package and we just have to import what we need.
+
+After that, we can register multiple channels with a selector object. When I/O activity happens on any of the channels, the selector notifies us. This is how we can read from a large number of data sources from a single thread.
+
+Any channel we register with a selector must be a sub-class of SelectableChannel. These are a special type of channels that can be put in non-blocking mode.
+
+4. Creating a Selector
+A selector may be created by invoking the static open method of the Selector class, which will use the system's default selector provider to create a new selector:
+
+Selector selector = Selector.open();

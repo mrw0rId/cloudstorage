@@ -5,7 +5,5 @@ public enum ManagerFlag {
     DELETE,
     SEND,
     OPEN,
-    RENAME,
-    CREATEDIR,
-    CREATEFILE
+    RENAME
 }
